@@ -395,17 +395,15 @@ class topology {
           }
         });
 
-        //console.log(this.FindTheWay(this.BFS[2], this.BFS[5]))
-
         this.BFS.forEach((nodei) => {
           this.BFS.forEach((nodej) => {
             if(nodei.label != nodej.label){
               let way = [];
               //way = this.FindTheWay(this.topology[2], this.topology[5])
               way = this.FindTheWay(nodei,nodej);
-              console.log("Đường đi từ " + nodei.label + " đến " + nodej.label )
-              console.log(way)
-              //this.ChooseHoming(nodei,nodej,way);
+              //console.log("Đường đi từ " + nodei.label + " đến " + nodej.label )
+              //console.log(way)
+              this.ChooseHoming(nodei,nodej,way);
               let h = new Hop(nodej.label,way.length + 1);
               nodei.hop.push(h);
             }
@@ -416,7 +414,7 @@ class topology {
       ChooseHoming(nodei,nodej,way){
         if(way.length == 1){
           let h = new Home(nodei.label,nodej.label,way[0].label)
-          console.log(h)
+          this.homeList.push(h)
         }else if(way.length > 1){
           let minCost = 999999999;
           let minNode = null;
@@ -427,13 +425,11 @@ class topology {
               minNode = node
             }
           });
-          console.log(minNode)
-          /*
+          //console.log(minNode)
           if(minNode != null){
-            let h = new Home(nodei.label, nodej.label, node.minNode.label)
-            console.log(h)
+            let h = new Home(nodei.label, nodej.label, minNode.label)
+            this.homeList.push(h)
           }
-          */
         }
       }
 
@@ -515,6 +511,7 @@ class topology {
             nodejEnv = this.getPDParent(nodejEnv);
             nodejWay.push(nodejEnv)
           }
+          nodejWay.reverse()
           nodejWay.shift();
           return nodejWay;
         } else if(nodej.isCenterNode){
@@ -526,6 +523,7 @@ class topology {
             nodeiEnv = this.getPDParent(nodeiEnv);
             nodeiWay.push(nodeiEnv)
           }
+          nodeiWay.reverse()
           nodeiWay.shift();
           return nodeiWay;
         }else if (nodei == nodej) {
@@ -614,6 +612,7 @@ class topology {
 
     console.log(this.BFS)
     console.log(this.topology)
+    console.log(this.homeList)
     console.log("Node MaXCOST: (" + this.listNodeMaxCost[0].label + ", " + this.listNodeMaxCost[1].label + ")")
     console.log("maxCost: " + this.maxCost )
     console.log("backboneRadius: " + this.backBoneRadius)
