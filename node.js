@@ -8,6 +8,8 @@ class node {
     this.dc = null;
     this.traffic = [];
     this.backBoneTraffic = [];
+    this.processingTraffic = [];
+    this.newEraTraffic = [];
     this.backBoneParent = null;
     this.ListAccessNode = [];
     this.isCenterNode = false;

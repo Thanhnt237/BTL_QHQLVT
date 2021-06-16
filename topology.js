@@ -1,4 +1,5 @@
 class topology {
+
   constructor(MainBoard){
     this.MainBoard = MainBoard;
     this.topology = [];
@@ -23,10 +24,12 @@ class topology {
     this.PrimDijsktra();
 
     this.BackBoneTraffic();
+    this.SaveBackBoneTraffic();
     this.CalculateHopCount();
 
     this.CalculateUAndHoming();
   }
+
 
     //random topo
     GenerateTopology(){
@@ -388,6 +391,15 @@ class topology {
         });
       }
 
+      SaveBackBoneTraffic(){
+        this.BFS.forEach((node) => {
+          node.backBoneTraffic.forEach((traffic) => {
+            let t = new Traffic(traffic.label, traffic.traffic)
+            node.processingTraffic.push(t)
+          });
+        });
+      }
+
       CalculateHopCount(){
         this.BFS.forEach((node) => {
           if(node.PDParent != null){
@@ -439,20 +451,84 @@ class topology {
         console.log(BhopArr)
 
         BhopArr.forEach((hopNode) => {
-          let n = this.getBackBoneTraffic(this.topology[hopNode.nodei],this.topology[hopNode.nodej]);
-          if(n != 0){
-            let u = this.topology[hopNode.nodei].traffic[hopNode.nodej].traffic/ (n*CAPITAL);
-            if( u < U_MIN){
-              this.TrafferTrafficAfterHoming()
+          if(hopNode.hop > 1){
+            let n = Math.floor(this.getBackBoneTraffic(this.topology[hopNode.nodei],this.topology[hopNode.nodej])/CAPITAL) + 1;
+            if(n != 0){
+              let u = this.getBackBoneTraffic(this.topology[hopNode.nodei],this.topology[hopNode.nodej])/ (n*CAPITAL);
+              if( u < U_MIN){
+                let newHome = null
+
+                this.homeList.forEach((home) => {
+                  if(home.nodeiLabel == hopNode.nodei && home.nodejLabel == hopNode.nodej){
+                    newHome = this.topology[home.homeLabel]
+                  }
+                });
+
+                this.TrafferTrafficAfterHoming(this.topology[hopNode.nodei],this.topology[hopNode.nodej], newHome)
+              }
+              //console.log("Độ sử dụng: ("+ hopNode.nodei + ", " + hopNode.nodej +"): " + u);
             }
-            console.log("Độ sử dụng: ("+ hopNode.nodei + ", " + hopNode.nodej +"): " + u);
+            //console.log("Số liên kết: ("+ hopNode.nodei + ", " + hopNode.nodej +"): " + n);
           }
-          console.log("Số liên kết: ("+ hopNode.nodei + ", " + hopNode.nodej +"): " + n);
+        });
+        this.CalculateNewEraTraffic()
+      }
+
+      CalculateNewEraTraffic(){
+        this.BFS.forEach((node) => {
+          node.newEraTraffic.forEach((traffic) => {
+            //console.log("Lưu lượng mới giữa: ("+ node.label + ", " + traffic.label +"): " + traffic.traffic);
+            let n = Math.floor(traffic.traffic/CAPITAL) + 1
+            console.log("Số liên kết mới giữa: ("+ node.label + ", " + traffic.label +"): " + n);
+            let u = traffic.traffic / (CAPITAL*n)
+            console.log("Độ sử dụng giữa: ("+ node.label + ", " + traffic.label +"): " + u);
+            this.drawNewEra(node.xAxis, node.yAxis, this.topology[traffic.label].xAxis, this.topology[traffic.label].yAxis )
+          });
+
         });
 
       }
 
-      TrafferTrafficAfterHoming(){
+      // TODO: wait to handle here
+      TrafferTrafficAfterHoming(nodei, nodej, home){
+        //console.log("Home của " + nodei.label + " và " + nodej.label + " là: " + home.label)
+        let t = 0;
+        nodei.processingTraffic.forEach((tra) => {
+          if(tra.label == nodej.label){
+            t += tra.traffic
+          }
+          if(tra.label == home.label){
+            t += tra.traffic
+          }
+        });
+
+
+      //  console.log(t)
+
+        nodei.processingTraffic.forEach((tra) => {
+          if(tra.label == home.label){
+            tra.traffic = t + tra.traffic;
+          }
+        });
+
+        if(nodei.newEraTraffic.length == 0){
+          let traf = new Traffic(home.label, t)
+          nodei.newEraTraffic.push(traf)
+        }else{
+          let countForNewEra = 0;
+          nodei.newEraTraffic.forEach((traff) => {
+            if(traff.label == home.label){
+              countForNewEra ++;
+              traff.traffic += t;
+            }
+          });
+
+          if(countForNewEra == 0){
+            let traf = new Traffic(home.label, t)
+            nodei.newEraTraffic.push(traf)
+          }
+
+        }
 
       }
 
@@ -616,9 +692,23 @@ class topology {
     console.log("Node MaXCOST: (" + this.listNodeMaxCost[0].label + ", " + this.listNodeMaxCost[1].label + ")")
     console.log("maxCost: " + this.maxCost )
     console.log("backboneRadius: " + this.backBoneRadius)
+
+    this.SaveFile();
+  }
+
+  SaveFile(){
+
   }
 
   DrawMaxCost(xi,yi,xj,yj){
+    this.MainBoard.context.strokeStyle = '#ff00ff';
+    this.MainBoard.context.beginPath();
+    this.MainBoard.context.moveTo(xi, yi);
+    this.MainBoard.context.lineTo(xj, yj);
+    this.MainBoard.context.stroke();
+  }
+
+  drawNewEra(xi,yi,xj,yj){
     this.MainBoard.context.strokeStyle = '#ff00ff';
     this.MainBoard.context.beginPath();
     this.MainBoard.context.moveTo(xi, yi);

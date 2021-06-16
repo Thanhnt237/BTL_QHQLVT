@@ -3,6 +3,5 @@ class HopNode{
     this.nodei = nodei;
     this.nodej = nodej;
     this.hop = hop;
-    this.home = null;
   }
 }
