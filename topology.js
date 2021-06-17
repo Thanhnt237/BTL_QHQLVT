@@ -28,6 +28,7 @@ class topology {
     this.CalculateHopCount();
 
     this.CalculateUAndHoming();
+
   }
 
 
@@ -46,9 +47,6 @@ class topology {
           node.traffic.push(traffic)
         }
       })
-
-
-
     }
 
 /*
@@ -148,6 +146,17 @@ class topology {
       //getMaxcost
       this.CalculateMaxCost();
       this.backBoneRadius = this.maxCost*PRARM
+      }
+
+      ReCalculateTopo(){
+        this.topology[3].traffic[10].traffic+=8;
+        this.topology[10].traffic[3].traffic+=8;
+        this.topology[13].traffic[37].traffic+=5;
+        this.topology[37].traffic[13].traffic+=5;
+        this.topology[15].traffic[30].traffic+=6;
+        this.topology[30].traffic[15].traffic+=6;
+        this.topology[40].traffic[58].traffic+=10;
+        this.topology[58].traffic[40].traffic+=10;
       }
 
       async CalculateMaxCost(){
@@ -479,7 +488,7 @@ class topology {
           node.newEraTraffic.forEach((traffic) => {
             //console.log("Lưu lượng mới giữa: ("+ node.label + ", " + traffic.label +"): " + traffic.traffic);
             let n = Math.floor(traffic.traffic/CAPITAL) + 1
-            console.log("Số liên kết mới giữa: ("+ node.label + ", " + traffic.label +"): " + n);
+            console.log("Số đường giữa: ("+ node.label + ", " + traffic.label +"): " + n);
             let u = traffic.traffic / (CAPITAL*n)
             console.log("Độ sử dụng giữa: ("+ node.label + ", " + traffic.label +"): " + u);
             this.drawNewEra(node.xAxis, node.yAxis, this.topology[traffic.label].xAxis, this.topology[traffic.label].yAxis )
@@ -698,7 +707,28 @@ class topology {
 
   SaveFile(){
 
+    this.topology.forEach((node) => {
+      console.log("Tọa độ node " + node.label+ ": (" + node.xAxis + ", " + node.yAxis + ") ")
+    });
+
+    this.topology.forEach((node) => {
+      node.traffic.forEach((traffic) => {
+        console.log("Lưu lượng giữa ( " + node.label + ", " + traffic.label + ") là " + traffic.traffic)
+      });
+    });
+
+    this.topology.forEach((node) => {
+      console.log("Trọng số của node " + node.label + " là: " + node.w)
+    });
+
+    this.topology.forEach((node) => {
+      node.backBoneTraffic.forEach((traffic) => {
+        console.log("Lưu lượng giữa node backbone ( " + node.label + ", " + traffic.label + ") là " + traffic.traffic)
+      });
+    });
+
   }
+
 
   DrawMaxCost(xi,yi,xj,yj){
     this.MainBoard.context.strokeStyle = '#ff00ff';
@@ -709,7 +739,7 @@ class topology {
   }
 
   drawNewEra(xi,yi,xj,yj){
-    this.MainBoard.context.strokeStyle = '#ff00ff';
+    this.MainBoard.context.strokeStyle = '#002aff';
     this.MainBoard.context.beginPath();
     this.MainBoard.context.moveTo(xi, yi);
     this.MainBoard.context.lineTo(xj, yj);

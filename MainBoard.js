@@ -21,7 +21,19 @@ class MainBoard {
       //test Field
       this.topology = new topology(this);
       btnUpdate.addEventListener("click",()=>{
+        this.context.fillStyle = "#212529";
+        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.topology.Classification();
         this.topology.FindAllBackBone();
+        this.topology.FindBackBoneCenter();
+        this.topology.PrimDijsktra();
+
+        this.topology.BackBoneTraffic();
+        this.topology.SaveBackBoneTraffic();
+        this.topology.CalculateHopCount();
+
+        this.topology.CalculateUAndHoming();
+
         this.Draw();
       })
     }
